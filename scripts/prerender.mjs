@@ -122,8 +122,8 @@ function pageHTML(c, lang) {
 <body>
   <header class="site-header">
     <div class="container header-inner">
-      <a href="/" class="logo">🩺 <span>${s.site}</span></a>
-      <nav class="header-nav"><a href="/">${s.home}</a></nav>
+      <a href="/?lang=${lang}" class="logo">🩺 <span>${s.site}</span></a>
+      <nav class="header-nav"><a href="/?lang=${lang}">${s.home}</a></nav>
     </div>
   </header>
   <main class="container" style="padding:32px 20px 64px;">
@@ -134,7 +134,7 @@ function pageHTML(c, lang) {
       <p class="summary">${esc(v.summary)}</p>
     </header>
 
-    <p><a href="/#/condition/${c.id}" style="display:inline-block;font-weight:700;color:var(--primary);">${s.interactive}</a></p>
+    <p><a href="/?lang=${lang}#/condition/${c.id}" style="display:inline-block;font-weight:700;color:var(--primary);">${s.interactive}</a></p>
 
     <section class="content-section">
       <h2>${s.what}</h2>

@@ -5,6 +5,14 @@
 /* ---------- 언어 상태 ---------- */
 const LANG_KEY = "mtm_lang";
 function detectLang() {
+  const explicit = new URLSearchParams(location.search).get("lang");
+  const deep = location.pathname.match(/^\/(en\/)?condition\/[^/]+\/?$/);
+  const requested = explicit === "ko" || explicit === "en"
+    ? explicit : deep ? (deep[1] ? "en" : "ko") : null;
+  if (requested) {
+    try { localStorage.setItem(LANG_KEY, requested); } catch (e) {}
+    return requested;
+  }
   try {
     const saved = localStorage.getItem(LANG_KEY);
     if (saved === "ko" || saved === "en") return saved;
@@ -201,13 +209,13 @@ const CATEGORIES = [
     name_en: "Ankle · Foot", desc_en: "Sprains, plantar fasciitis, Achilles tendon, and more" },
 ];
 const CATEGORY_VISUALS = {
-  neck: "assets/illustrations/neck.webp",
-  shoulder: "assets/illustrations/shoulder.webp",
-  "elbow-hand": "assets/illustrations/elbow-hand.webp",
-  back: "assets/illustrations/back.webp",
-  hip: "assets/illustrations/hip.webp",
-  knee: "assets/illustrations/knee.webp",
-  foot: "assets/illustrations/foot.webp",
+  neck: "/assets/illustrations/neck.webp",
+  shoulder: "/assets/illustrations/shoulder.webp",
+  "elbow-hand": "/assets/illustrations/elbow-hand.webp",
+  back: "/assets/illustrations/back.webp",
+  hip: "/assets/illustrations/hip.webp",
+  knee: "/assets/illustrations/knee.webp",
+  foot: "/assets/illustrations/foot.webp",
 };
 function catName(cat) { return LANG === "en" ? cat.name_en : cat.name; }
 function catDesc(cat) { return LANG === "en" ? cat.desc_en : cat.desc; }
@@ -429,7 +437,7 @@ function renderHome() {
         <p class="search-hint">${T("search_hint")}</p>
       </div>
       <figure class="hero-visual" aria-hidden="false">
-        <img src="assets/illustrations/hero-pain-guide.webp" alt="${esc(T("hero_visual_alt"))}" width="1600" height="878" decoding="async" fetchpriority="high" />
+        <img src="/assets/illustrations/hero-pain-guide.webp" alt="${esc(T("hero_visual_alt"))}" width="1600" height="878" decoding="async" fetchpriority="high" />
       </figure>
     </section>
 
@@ -492,13 +500,18 @@ function renderAll() {
 /* 검색 결과에서 일치 단어를 표시할 때만 채워진다 */
 let HIGHLIGHT_TERMS = [];
 function markTerms(s) {
-  let out = s;
-  for (const t of HIGHLIGHT_TERMS) {
-    if (!t) continue;
-    const re = new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
-    out = out.replace(re, (m) => `<mark>${m}</mark>`);
+  const text = String(s);
+  const terms = [...new Set(HIGHLIGHT_TERMS.filter(Boolean))]
+    .sort((a, b) => b.length - a.length);
+  if (!terms.length) return esc(text);
+  const pattern = terms.map((term) => term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+  const re = new RegExp(pattern, "gi");
+  let out = "", end = 0;
+  for (const match of text.matchAll(re)) {
+    out += esc(text.slice(end, match.index)) + `<mark>${esc(match[0])}</mark>`;
+    end = match.index + match[0].length;
   }
-  return out;
+  return out + esc(text.slice(end));
 }
 
 function itemHTML(c) {
@@ -865,7 +878,8 @@ function focusConditionSection(sectionId) {
 }
 
 function route() {
-  const hash = location.hash.replace(/^#/, "") || "/";
+  const deep = location.pathname.match(/^\/(?:en\/)?condition\/([^/]+)\/?$/);
+  const hash = location.hash.replace(/^#/, "") || (deep ? `/condition/${deep[1]}` : "/");
   const [, page, param, param2] = hash.split("/");
   window.scrollTo(0, 0);
   applyChrome();
@@ -907,6 +921,9 @@ window.addEventListener("DOMContentLoaded", () => { applyChrome(); route(); });
 /* 언어 토글 */
 function toggleLang() {
   LANG = LANG === "ko" ? "en" : "ko";
+  const url = new URL(location.href);
+  url.searchParams.set("lang", LANG);
+  history.replaceState(null, "", url);
   try { localStorage.setItem(LANG_KEY, LANG); } catch (e) {}
   route();
   // 스크린리더에게 언어가 바뀌었음을 알린다
@@ -1037,6 +1054,6 @@ window.addEventListener("scroll", () => {
    index.html <head> 인라인 스크립트에서 가장 먼저 등록한다. */
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js").catch(() => {});
+    navigator.serviceWorker.register("/sw.js").catch(() => {});
   });
 }
