@@ -1,0 +1,7 @@
+# 빌드 없이 레포 전체가 그대로 배포되므로, 사이트에 필요 없는 파일은 업로드에서 제외한다.
+README.md
+.github/
+tests/
+scripts/
+assets/generate-icons.js
+assets/generate-og.js

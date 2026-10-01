@@ -58,6 +58,7 @@ assets/                # OG·앱 아이콘 + 순수 Node 생성 스크립트
 scripts/prerender.mjs  # 질환별 정적 페이지 + sitemap 생성기 (SEO)
 condition/, en/condition/  # 생성된 질환별 정적 페이지 (검색엔진·SNS 공유용)
 sitemap.xml, robots.txt    # 생성된 SEO 파일
+.vercelignore              # 배포에서 제외할 파일 (README·테스트·생성 스크립트)
 ```
 
 ### SEO 정적 페이지
